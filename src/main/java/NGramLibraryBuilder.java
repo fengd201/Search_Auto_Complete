@@ -22,7 +22,7 @@ public class NGramLibraryBuilder {
             // read sentence by sentence
             String line = value.toString().trim().toLowerCase().replaceAll("[^a-z]", " ");
             // split by space
-            String[] words = line.split("//s+");
+            String[] words = line.split("\\s+");
             if (words.length < 2) {
                 return;
             }
@@ -34,6 +34,7 @@ public class NGramLibraryBuilder {
                 for (int j = 1; j < noGram && i + j < words.length; j++) {
                     sb.append(" ").append(words[i+j]);
                     context.write(new Text(sb.toString().trim()), new IntWritable(1));
+                    context.getCounter("Words", "word").increment(1);
                 }
             }
         }
