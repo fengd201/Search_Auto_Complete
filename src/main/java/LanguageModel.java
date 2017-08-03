@@ -11,7 +11,7 @@ import java.util.Comparator;
 import java.util.PriorityQueue;
 
 public class LanguageModel {
-    public static class NGramMapper extends Mapper<LongWritable, Text, Text, Text> {
+    public static class LangModelMapper extends Mapper<LongWritable, Text, Text, Text> {
 
         int threshold;
         @Override
@@ -50,7 +50,7 @@ public class LanguageModel {
 
     }
 
-    public static class NGramReducer extends Reducer<Text, Text, Text, NullWritable> {
+    public static class LangModelReducer extends Reducer<Text, Text, Text, NullWritable> {
         int topK;
         @Override
         public void setup(Context context) {

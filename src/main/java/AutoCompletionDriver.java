@@ -15,7 +15,10 @@ public class AutoCompletionDriver {
 
         String inputDir = args[0];
         String nGramLibDir = args[1];
-        String numberOfNGram = args[2];
+        String langModelOutDir = args[2];
+        String numberOfNGram = args[3];
+        String threshold = args[4];
+        String numberOfFollowingWords = args[4];
 
         // job1 - build N-Gram library
         Configuration conf1 = new Configuration();
@@ -37,6 +40,28 @@ public class AutoCompletionDriver {
 
         TextInputFormat.setInputPaths(job1, new Path(inputDir));
         TextOutputFormat.setOutputPath(job1, new Path(nGramLibDir));
-        System.exit(job1.waitForCompletion(true) ? 0 : 1);
+        job1.waitForCompletion(true);
+
+        // job2
+        Configuration conf2 = new Configuration();
+        conf2.set("threshold", threshold);
+        conf2.set("topK", numberOfFollowingWords);
+
+        Job job2 = Job.getInstance(conf2);
+        job2.setJobName("LanguageModelJob");
+        job2.setJarByClass(AutoCompletionDriver.class);
+
+        job2.setMapperClass(LanguageModel.LangModelMapper.class);
+        job2.setReducerClass(LanguageModel.LangModelReducer.class);
+
+        job2.setOutputKeyClass(Text.class);
+        job2.setOutputValueClass(Text.class);
+
+        job2.setInputFormatClass(TextInputFormat.class);
+        job2.setOutputFormatClass(TextOutputFormat.class);
+
+        TextInputFormat.setInputPaths(job2, new Path(nGramLibDir));
+        TextOutputFormat.setOutputPath(job2, new Path(langModelOutDir));
+        System.exit(job2.waitForCompletion(true) ? 0 : 1);
     }
 }
