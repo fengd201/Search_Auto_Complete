@@ -1,3 +1,4 @@
+import dto.DBOutputWritable;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.NullWritable;
@@ -50,7 +51,7 @@ public class LanguageModel {
 
     }
 
-    public static class LangModelReducer extends Reducer<Text, Text, Text, NullWritable> {
+    public static class LangModelReducer extends Reducer<Text, Text, DBOutputWritable, NullWritable> {
         int topK;
         @Override
         public void setup(Context context) {
@@ -76,16 +77,14 @@ public class LanguageModel {
                 String word = value.toString().split("=")[0];
                 wordsCountQueue.offer(new WordsCountTO(count, word));
             }
-            StringBuilder sb = new StringBuilder();
-            sb.append(key.toString());
+            WordsCountTO wordsCountTO = new WordsCountTO(0,"");
             for (int i = 0; i < topK; i++) {
                 if (wordsCountQueue.isEmpty()) {
                     break;
                 }
-                WordsCountTO wordsCountTO = wordsCountQueue.poll();
-                sb.append("|").append(wordsCountTO.getWord()).append("|").append(wordsCountTO.getCount());
+                wordsCountTO = wordsCountQueue.poll();
             }
-            context.write(new Text(sb.toString()), NullWritable.get());
+            context.write(new DBOutputWritable(key.toString(), wordsCountTO.getWord(), wordsCountTO.getCount()), NullWritable.get());
         }
     }
 }
